@@ -2,17 +2,8 @@
   "version": 2,
   "rewrites": [
     {
-      "source": "/widget",
-      "destination": "/api/app.py"
-    },
-    {
       "source": "/(.*)",
       "destination": "/api/app.py"
     }
-  ],
-  "functions": {
-    "api/app.py": {
-      "runtime": "python@3.12.3"
-    }
-  }
+  ]
 }
