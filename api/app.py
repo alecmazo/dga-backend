@@ -1,6 +1,7 @@
 import os
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse  # This lets us return pure HTML
+from fastapi.responses import RedirectResponse  # Add this import at the top if not already there
 from xai_sdk import Client
 from xai_sdk.chat import user, system
 import yfinance as yf  # For stock prices
@@ -94,6 +95,10 @@ def widget():
 
     html += "</body></html>"
     return html
+
+@app.get("/", response_class=RedirectResponse)
+def root():
+    return "/widget"  # Redirects to /widget automatically
 
 @app.get("/test")
 def test():
