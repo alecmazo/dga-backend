@@ -49,7 +49,7 @@ def get_daily_analyses():
             try:
                 chat = client.chat.create(model="grok-4")
                 chat.append(system(prompt))
-                chat.append(user(f"Today's date: {datetime.now().date()}. Portfolio summary: {summary}. Provide a concise daily analysis (200-300 words) from your perspective."))  # Fixed: Complete and closed f-string
+                chat.append(user(f"Today's date: {datetime.now().date()}. Portfolio summary: {summary}. Provide a concise daily analysis (200-300 words) from your perspective."))
                 response = chat.sample()
                 analyses[agent] = response.content
             except Exception as e:
