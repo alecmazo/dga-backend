@@ -97,7 +97,7 @@ def widget():
             """
 
     html += "</body></html>"
-    return html
+    return HTMLResponse(content=html, media_type="text/html")
 
 @app.get("/", response_class=RedirectResponse)
 def root():
