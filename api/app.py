@@ -50,7 +50,9 @@ def get_daily_analyses():
             try:
                 chat = client.chat.create(model="grok-4")
                 chat.append(system(prompt))
-                chat.append(user(f"Today's date: {datetime.now().date()}. Portfolio summary: {summary}. Provide a concise daily analysis (200-300 words) from your perspective."))
+                chat.append(user(f"Today's date: {datetime.now().date()}. Portfolio summary: {summary}. Pick one or two of your favorite stocks from the portfolio, not more. Provide a concise, two paragraph analysis, with the first viewing the stock you chose 
+                                 from a point of view of what happened so far in the past year to evolve the story, and second, to update us on the current developments, including today, and the view one year out from here. Put a fair value on it
+                                   based on your deep financial analysis, looking at the fundamentals, competitors, balance sheet, cash flows, income statement, evaluation of management, and how politics affect this investment. "))
                 response = chat.sample()
                 analyses[agent] = response.content
             except Exception as e:
