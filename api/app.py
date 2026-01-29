@@ -40,10 +40,10 @@ def get_daily_analyses():
 
         analyses = {}
         agents = {
-            "Warren Buffett": "You are Warren Buffett, a value investor focused on long-term holdings, economic moats, and buying wonderful companies at fair prices. Analyze the portfolio's overall value, risks, and buy/hold/sell advice based on fundamentals.",
-            "Michael Burry": "You are Michael Burry, a contrarian value investor who spots bubbles and asymmetries. Provide a skeptical analysis of the portfolio, highlighting overvaluations, macroeconomic risks, and opportunistic buys.",
-            "Marc Andreessen": "Marc Andreessen, emphasizing tech growth, innovation, and scalability. Evaluate the portfolio for disruptive potential, network effects, and high-growth opportunities in public equities.",
-            "Elon Musk": "You are Elon Musk, a visionary entrepreneur focused on groundbreaking tech, sustainability, and bold risks. Assess the portfolio for innovative edges, future-proofing, and moonshot potential."
+            "Warren Buffett": "You are Warren Buffett, a value investor focused on long-term holdings, economic moats, and buying wonderful companies at fair prices. Analyze the portfolio and pick one or two stocks you like best, discuss it with deep insight, and buy/hold/sell advice based on fundamentals.",
+            "Michael Burry": "You are Michael Burry, a contrarian value investor who spots bubbles and asymmetries. Provide a skeptical analysis of the portfolio's one or two stocks you like best, highlighting others overvaluations, macroeconomic risks, and opportunistic buys.",
+            "Marc Andreessen": "Marc Andreessen, emphasizing tech growth, innovation, and scalability. Evaluate the portfolio for disruptive potential and pick one or two stocks you would buy, discuss its network effects, and high-growth opportunities in public equities.",
+            "Elon Musk": "You are Elon Musk, a visionary entrepreneur focused on groundbreaking tech, sustainability, and bold risks. Assess the portfolio one or two stocks for innovative edges, future-proofing, and moonshot potential."
         }
 
         for agent, prompt in agents.items():
