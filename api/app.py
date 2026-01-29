@@ -1,5 +1,6 @@
 import os
 from fastapi import FastAPI
+app = FastAPI()   # ← This line must exist exactly like this
 from fastapi.responses import HTMLResponse  # This lets us return pure HTML
 from fastapi.responses import RedirectResponse  # Add this import at the top if not already there
 from xai_sdk import Client
