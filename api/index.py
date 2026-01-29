@@ -14,7 +14,7 @@ if not api_key:
     api_key = "fallback-dummy-key"  # For testing; replace in Vercel
 
 # Your stock portfolio - edit this list!
-portfolio = ["AAPL", "TSLA", "AMZN", "GOOGL", "MSFT", "NVDA", "BRK.B", "JPM", "WMT", "XOM", "PFE", "KO", "PG", "V", "MCD"]
+portfolio = ["TSLA", "INTC", "FNMAS", "IBRX"]
 
 @lru_cache(maxsize=1)  # Caches the analyses
 def get_daily_analyses():
