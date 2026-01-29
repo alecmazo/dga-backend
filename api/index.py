@@ -1,8 +1,6 @@
 import os
 from fastapi import FastAPI
-app = FastAPI()   # ← This line must exist exactly like this
 from fastapi.responses import HTMLResponse  # This lets us return pure HTML
-from fastapi.responses import RedirectResponse  # Add this import at the top if not already there
 from xai_sdk import Client
 from xai_sdk.chat import user, system
 import yfinance as yf  # For stock prices
@@ -11,15 +9,15 @@ from functools import lru_cache  # Caches results for the day
 
 app = FastAPI()
 
-# Get your xAI API key from environment (set via export in Terminal)
+# Get your xAI API key from environment (set via Vercel env vars)
 api_key = os.getenv("XAI_API_KEY")
 if not api_key:
-    api_key = "fallback-dummy-key"  # Or return an error HTML: return "<html><body>API key missing—check Vercel env vars.</body></html>"
+    api_key = "fallback-dummy-key"  # For testing; replace with real key in Vercel
 
-client = Client(api_key=api_key, timeout=3600)
+client = Client(api_key=api_key, timeout=10)  # Short timeout for Vercel limits
 
-# Your stock portfolio - DEFINED HERE! Edit this list as needed. Make sure it's not indented under anything.
-portfolio = ["INTC", "TSLA", "MOH", "T", "FNMAS", "CSCO", "HAL", "IBRX", "WFC", "C"]
+# Your stock portfolio - edit this list!
+portfolio = ["AAPL", "TSLA", "AMZN", "GOOGL", "MSFT", "NVDA", "BRK.B", "JPM", "WMT", "XOM", "PFE", "KO", "PG", "V", "MCD"]
 
 @lru_cache(maxsize=1)  # Caches the analyses so they don't regenerate on every request
 def get_daily_analyses():
@@ -41,17 +39,17 @@ def get_daily_analyses():
 
         analyses = {}
         agents = {
-            "Warren Buffett": "You are Warren Buffett, a value investor focused on long-term holdings, economic moats, and buying wonderful companies at fair prices. Analyze the portfolio and pick one or two stocks you like best, discuss it with deep insight, and buy/hold/sell advice based on fundamentals.",
-            "Michael Burry": "You are Michael Burry, a contrarian value investor who spots bubbles and asymmetries. Provide a skeptical analysis of the portfolio's one or two stocks you like best, highlighting others overvaluations, macroeconomic risks, and opportunistic buys.",
-            "Marc Andreessen": "Marc Andreessen, emphasizing tech growth, innovation, and scalability. Evaluate the portfolio for disruptive potential and pick one or two stocks you would buy, discuss its network effects, and high-growth opportunities in public equities.",
-            "Elon Musk": "You are Elon Musk, a visionary entrepreneur focused on groundbreaking tech, sustainability, and bold risks. Assess the portfolio one or two stocks for innovative edges, future-proofing, and moonshot potential."
+            "Warren Buffett": "You are Warren Buffett, a value investor focused on long-term holdings, economic moats, and buying wonderful companies at fair prices. Analyze the portfolio's overall value, risks, and buy/hold/sell advice based on fundamentals.",
+            "Michael Burry": "You are Michael Burry, a contrarian value investor who spots bubbles and asymmetries. Provide a skeptical analysis of the portfolio, highlighting overvaluations, macroeconomic risks, and opportunistic buys.",
+            "Andreessen Horowitz": "You are an analyst from Andreessen Horowitz, emphasizing tech growth, innovation, and scalability. Evaluate the portfolio for disruptive potential, network effects, and high-growth opportunities in public equities.",
+            "Elon Musk": "You are Elon Musk, a visionary entrepreneur focused on groundbreaking tech, sustainability, and bold risks. Assess the portfolio for innovative edges, future-proofing, and moonshot potential."
         }
 
         for agent, prompt in agents.items():
             try:
                 chat = client.chat.create(model="grok-4")
                 chat.append(system(prompt))
-                chat.append(user(f"Today's date: {datetime.now().date()}. Portfolio summary: {summary}. Pick one or two of your favorite stocks from the portfolio, not more. Provide a concise, two paragraph analysis, with the first viewing the stock you chose from a point of view of what happened so far in the past year to evolve the story, and second, to update us on the current developments, including today, and the view one year out from here. Put a fair value on it based on your deep financial analysis, looking at the fundamentals, competitors, balance sheet, cash flows, income statement, evaluation of management, and how politics affect this investment."))
+                chat.append(user(f"Today's date: {datetime.now().date()}. Portfolio summary: {summary}. Provide a concise daily analysis (200-300 words) from your perspective."))  # Fixed: Complete and closed f-string
                 response = chat.sample()
                 analyses[agent] = response.content
             except Exception as e:
@@ -95,15 +93,8 @@ def widget():
             """
 
     html += "</body></html>"
-    return HTMLResponse(content=html, media_type="text/html")
+    return HTMLResponse(content=html, media_type="text/html")  # Explicit header to prevent download
 
 @app.get("/", response_class=RedirectResponse)
 def root():
-    return "/widget"  # Redirects to /widget automatically
-
-@app.get("/test")
-def test():
-    return "Hello, this is working!"
-
-
-#"INTC", "TSLA", "MOH", "T", "FNMAS", "CSCO", "HAL", "IBRX", "WFC", "C"
+    return "/widget"  # Redirect root to widget
