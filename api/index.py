@@ -1,28 +1,25 @@
 import os
+import requests  # For direct API calls
 from fastapi import FastAPI
-from fastapi.responses import HTMLResponse  # This lets us return pure HTML
-from xai_sdk import Client
-from xai_sdk.chat import user, system
+from fastapi.responses import HTMLResponse, RedirectResponse  # For HTML and redirect
 import yfinance as yf  # For stock prices
 from datetime import datetime
 from functools import lru_cache  # Caches results for the day
 
 app = FastAPI()
 
-# Get your xAI API key from environment (set via Vercel env vars)
+# Get your xAI API key from environment
 api_key = os.getenv("XAI_API_KEY")
 if not api_key:
-    api_key = "fallback-dummy-key"  # For testing; replace with real key in Vercel
-
-client = Client(api_key=api_key, timeout=10)  # Short timeout for Vercel limits
+    api_key = "fallback-dummy-key"  # For testing; replace in Vercel
 
 # Your stock portfolio - edit this list!
 portfolio = ["AAPL", "TSLA", "AMZN", "GOOGL", "MSFT", "NVDA", "BRK.B", "JPM", "WMT", "XOM", "PFE", "KO", "PG", "V", "MCD"]
 
-@lru_cache(maxsize=1)  # Caches the analyses so they don't regenerate on every request
+@lru_cache(maxsize=1)  # Caches the analyses
 def get_daily_analyses():
     try:
-        # Fetch current stock data
+        # Fetch stock data
         stock_data = {}
         for ticker in portfolio:
             try:
@@ -32,7 +29,7 @@ def get_daily_analyses():
                     "change": info.get("regularMarketChangePercent", "N/A")
                 }
             except Exception as e:
-                stock_data[ticker] = {"price": "N/A", "change": "N/A"}  # Fallback on error
+                stock_data[ticker] = {"price": "N/A", "change": "N/A"}
 
         summary = "\n".join([f"{ticker}: Price ${data['price']}, Change {data['change']}%" 
                              for ticker, data in stock_data.items()])
@@ -47,11 +44,21 @@ def get_daily_analyses():
 
         for agent, prompt in agents.items():
             try:
-                chat = client.chat.create(model="grok-4")
-                chat.append(system(prompt))
-                chat.append(user(f"Today's date: {datetime.now().date()}. Portfolio summary: {summary}. Provide a concise daily analysis (200-300 words) from your perspective."))
-                response = chat.sample()
-                analyses[agent] = response.content
+                headers = {
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json"
+                }
+                body = {
+                    "model": "grok-4",
+                    "messages": [
+                        {"role": "system", "content": prompt},
+                        {"role": "user", "content": f"Today's date: {datetime.now().date()}. Portfolio summary: {summary}. Provide a concise daily analysis (200-300 words) from your perspective."}
+                    ]
+                }
+                response = requests.post("https://api.x.ai/v1/chat/completions", headers=headers, json=body, timeout=10)
+                response.raise_for_status()  # Raise if not 200
+                response_json = response.json()
+                analyses[agent] = response_json['choices'][0]['message']['content']
             except Exception as e:
                 analyses[agent] = f"Error generating {agent}'s analysis: {str(e)}"
 
@@ -65,7 +72,6 @@ def widget():
     analyses = get_daily_analyses()
     today = datetime.now().date()
 
-    # Build simple HTML
     html = f"""
     <html>
     <head>
@@ -93,8 +99,8 @@ def widget():
             """
 
     html += "</body></html>"
-    return HTMLResponse(content=html, media_type="text/html")  # Explicit header to prevent download
+    return HTMLResponse(content=html, media_type="text/html")
 
 @app.get("/", response_class=RedirectResponse)
 def root():
-    return "/widget"  # Redirect root to widget
+    return "/widget"

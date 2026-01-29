@@ -1,4 +1,4 @@
-fastapi
-uvicorn[standard]
-xai-sdk
-yfinance
+fastapi==0.115.2
+uvicorn[standard]==0.31.1
+yfinance==0.2.44
+requests==2.32.3
